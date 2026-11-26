@@ -54,16 +54,17 @@ class StripeUPIPayment(PaymentMethod):
         print("Charged Rs", amount, "to Stripe UPI")
         return True
 
-#Factories
+# Factories
+
 class FactoryPaymentMethod:
     factory = {}
 
     @classmethod
-    def get_payment_object(cls, method_type, **kwargs):
+    def get_payment_object(cls, method_type, **args):
         if method_type not in cls.factory:
             print("Method not supported")
             return None
-        return cls.factory[method_type](**kwargs)
+        return cls.factory[method_type](**args)
 
 class RazorpayFactory(FactoryPaymentMethod):
     factory = {
