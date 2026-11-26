@@ -1,12 +1,12 @@
 import csv
 import os
+import pandas as pd
 
-# name of the file we are using
 FILE_NAME = "employees.csv"
 
 class EmployeeManager:
     def __init__(self):
-        # create the file with headers if it doesn't exist
+        # create file with headers if it doesn't exist
         if not os.path.exists(FILE_NAME):
             with open(FILE_NAME, mode='w', newline='') as f:
                 writer = csv.writer(f)
@@ -15,7 +15,6 @@ class EmployeeManager:
     def add_employee(self):
         emp_id = input("Enter Employee ID: ")
         
-        # check if id already exists
         if self.find_employee(emp_id):
             print("Error: Employee ID already exists!")
             return
@@ -28,25 +27,21 @@ class EmployeeManager:
             writer = csv.writer(f)
             writer.writerow([emp_id, name, dept, salary])
         
-        print("Employee added successfully.")
+        print("Employee added.")
 
     def view_employees(self):
-        with open(FILE_NAME, mode='r') as f:
-            reader = csv.reader(f)
-            rows = list(reader)
-            
-            if len(rows) <= 1:
-                print("No employees found.")
-                return
-
-            print("\n--- Employee List ---")
-            for row in rows:
-                # print nicely formatted
-                print(f"ID: {row[0]} | Name: {row[1]} | Dept: {row[2]} | Salary: {row[3]}")
-            print("---------------------\n")
+        try:
+            data = pd.read_csv(FILE_NAME)
+            if data.empty:
+                print("No records found.")
+            else:
+                print("\n--- Employee List ---")
+                print(data.to_string(index=False))
+                print("---------------------\n")
+        except Exception as e:
+            print("Error reading file:", e)
 
     def find_employee(self, emp_id):
-        # helper function to return the employee row if found
         with open(FILE_NAME, mode='r') as f:
             reader = csv.reader(f)
             for row in reader:
@@ -56,8 +51,6 @@ class EmployeeManager:
 
     def update_employee(self):
         emp_id = input("Enter Employee ID to update: ")
-        
-        # read all data first
         rows = []
         found = False
         
@@ -66,12 +59,11 @@ class EmployeeManager:
             for row in reader:
                 if row and row[0] == emp_id:
                     found = True
-                    print(f"Current Data -> Name: {row[1]}, Dept: {row[2]}, Salary: {row[3]}")
+                    print(f"Old Data -> Name: {row[1]}, Dept: {row[2]}, Salary: {row[3]}")
                     
-                    # ask for new data
-                    name = input("Enter new Name (or press enter to keep old): ")
-                    dept = input("Enter new Department (or press enter to keep old): ")
-                    salary = input("Enter new Salary (or press enter to keep old): ")
+                    name = input("Enter new Name (or press enter to skip): ")
+                    dept = input("Enter new Department (or press enter to skip): ")
+                    salary = input("Enter new Salary (or press enter to skip): ")
 
                     if name == "": name = row[1]
                     if dept == "": dept = row[2]
@@ -85,16 +77,13 @@ class EmployeeManager:
             print("Employee not found.")
             return
 
-        # write everything back
         with open(FILE_NAME, mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(rows)
-            
         print("Employee updated.")
 
     def delete_employee(self):
         emp_id = input("Enter Employee ID to delete: ")
-        
         rows = []
         found = False
         
@@ -103,7 +92,6 @@ class EmployeeManager:
             for row in reader:
                 if row and row[0] == emp_id:
                     found = True
-                    # skip this row (don't add to new list)
                 else:
                     rows.append(row)
 
@@ -111,25 +99,23 @@ class EmployeeManager:
             print("Employee not found.")
             return
 
-        # write remaining rows back
         with open(FILE_NAME, mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(rows)
-            
         print("Employee deleted.")
 
-# Nenu Loop
+# Menu Loop
 if __name__ == "__main__":
     manager = EmployeeManager()
     
     while True:
         print("1. Add Employee")
-        print("2. View Employees")
+        print("2. View Employees (Pandas)")
         print("3. Update Employee")
         print("4. Delete Employee")
         print("5. Exit")
         
-        choice = input("Enter your choice: ")
+        choice = input("Enter choice: ")
         
         if choice == '1':
             manager.add_employee()
@@ -140,7 +126,6 @@ if __name__ == "__main__":
         elif choice == '4':
             manager.delete_employee()
         elif choice == '5':
-            print("Exiting...")
             break
         else:
-            print("Invalid choice, try again.")
+            print("Invalid choice.")
